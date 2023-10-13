@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - echo $AWS_DEFAULT_REGION
+      - echo Installing Buildx
+      - echo starting
+      - aws ecr get-login-password --region $AWS_ACCOUNT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_ACCOUNT_REGION.amazonaws.com
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...  
+      - docker build -t pythonapp  .
+      - docker tag pythonapp:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_ACCOUNT_REGION.amazonaws.com/$REPOSITORY_NAME:latest-$IMAGE_PREFIX
+  post_build:
+    commands:
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_ACCOUNT_REGION.amazonaws.com/$REPOSITORY_NAME:latest-$IMAGE_PREFIX
+      - echo Writing image definitions file...
+      - printf '[{"name":"%s","imageUri":"%s"}]' ${CONTAINER_NAME} $AWS_ACCOUNT_ID.dkr.ecr.$AWS_ACCOUNT_REGION.amazonaws.com/$REPOSITORY_NAME:latest > ${IMAGE_PREFIX}imagedefinitions.json
+      - cat ${IMAGE_PREFIX}imagedefinitions.json
+      - ls -ltr ${IMAGE_PREFIX}imagedefinitions.json
+      - ls -al
+artifacts:
+    files: ${IMAGE_PREFIX}imagedefinitions.json
