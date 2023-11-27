@@ -1,4 +1,5 @@
 resource "aws_s3_bucket" "bucket" {
+  bucket = var.bucket_name
 }
 
 resource "aws_s3_bucket_notification" "bucket_notification" {
@@ -11,6 +12,6 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
   }
 }
 
-output "bucket_name" {
-  value = aws_s3_bucket.bucket.bucket
+output "bucket_arn" {
+  value = aws_s3_bucket.bucket.arn
 }
